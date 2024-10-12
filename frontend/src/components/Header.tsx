@@ -17,8 +17,8 @@ export function Header({ setIsChatOpen, isChatOpen, handleDropdownChange, analys
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="default" className="flex items-center bg-background hover:bg-muted p-4">
-            <h1 className="text-2xl font-bold">{analysisMode}</h1>
+          <Button variant="default" className="flex items-center bg-background hover:bg-muted p-4 text-foreground">
+            <h1 className="text-2xl font-bold ">{analysisMode}</h1>
             <ChevronDown />
           </Button>
         </DropdownMenuTrigger>

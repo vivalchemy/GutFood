@@ -107,7 +107,7 @@ export default function HomePage() {
 
   return (
     <div className="flex h-screen bg-background text-foreground relative">
-      <div className="flex-1 flex flex-col p-4">
+      <div className="flex-1 flex flex-col p-4 overflow-y-auto">
         <Header
           isChatOpen={isChatOpen}
           setIsChatOpen={setIsChatOpen}

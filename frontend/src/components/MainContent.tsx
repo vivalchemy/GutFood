@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { ImagePreview } from './ImagePreview'
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import ReactMarkdown from "react-markdown"; // Assuming you want to use markdown parsing
+import { LoadingSpinner } from "./ui/loading-spinner";
 
 interface MainContentProps {
   analysisMode: "Image Analysis" | "Manual"
@@ -12,8 +15,6 @@ interface MainContentProps {
   cameraPermission: PermissionState | null
 }
 
-{/* TODO: Add recipe textarea */ }
-
 export function MainContent({
   analysisMode,
   selectedImage,
@@ -22,13 +23,51 @@ export function MainContent({
   openCamera,
   cameraPermission
 }: MainContentProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [markdownAnalysis, setMarkdownAnalysis] = useState("");
+
+  // New state for storing and retrieving health records from localStorage
+  const [healthRecords, setHealthRecords] = useState("");
+
+  // Load data from local storage when the component mounts
+  useEffect(() => {
+    const savedHealthRecords = localStorage.getItem("healthRecords");
+    if (savedHealthRecords) {
+      setHealthRecords(savedHealthRecords);
+    }
+  }, []);
+
+  // Update local storage when healthRecords state changes
+  useEffect(() => {
+    localStorage.setItem("healthRecords", healthRecords);
+  }, [healthRecords]);
+
+  const handleRunAnalysis = () => {
+    setIsLoading(true);
+    setShowAnalysis(false);
+
+    // Simulate analysis time (2 seconds)
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowAnalysis(true);
+
+      // Placeholder markdown analysis data
+      setMarkdownAnalysis(`
+- **Diagnosis**: Healthy
+- **Suggested Ingredients**: Apple, Carrot, Ginger
+- **Medical Advice**: No significant issues, continue with a balanced diet.
+`);
+    }, 2000);
+  };
+
   return (
     <div>
+      {/* Render the image preview or ingredient list based on the analysis mode */}
       {analysisMode === "Image Analysis" ? (
         <Card className="mb-4">
           <CardHeader>
-            <CardTitle>
-              Image Preview</CardTitle>
+            <CardTitle>Image Preview</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center">
             <ImagePreview
@@ -41,10 +80,51 @@ export function MainContent({
           </CardContent>
         </Card>
       ) : (
-        < Textarea placeholder="Recipe" className="mb-4 min-h-100" />
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Ingredient List</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center">
+            <Textarea
+              placeholder="Enter the list of ingredients..."
+              className="mb-4 min-h-40"
+            />
+          </CardContent>
+        </Card>
       )}
-      <Textarea placeholder="Additional details..." className="mb-4" />
-      <Button className="w-full text-lg">Run Analysis</Button>
+
+      {/* Render the health records textarea */}
+      <h3 className="font-semibold leading-none tracking-tight mb-4">
+        Previous Medical History
+      </h3>
+      <Textarea
+        placeholder="Add Health details here..."
+        value={healthRecords}
+        onChange={(e) => setHealthRecords(e.target.value)}
+        className="mb-4 min-h-40"
+      />
+      <Button className="w-full text-lg" onClick={handleRunAnalysis}>
+        Run Analysis
+      </Button>
+
+      {/* Render the loading spinner while the analysis is running */}
+      {isLoading && (
+        <div className="flex justify-center w-full mt-4">
+          <LoadingSpinner size={48} />
+        </div>
+      )}
+
+      {showAnalysis && (
+        <div className="mt-8 prose lg:prose-lg dark:prose-invert">
+          <h2 className="font-semibold leading-none tracking-tight mb-4">
+            Analysis Result
+          </h2>
+          <div className="p-4 bg-background border w-full rounded-lg">
+            <ReactMarkdown>{markdownAnalysis}</ReactMarkdown>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
+
