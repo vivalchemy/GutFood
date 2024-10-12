@@ -18,9 +18,11 @@ import InfoIcon from "@mui/icons-material/Info";
 import CommentRoundedIcon from "@mui/icons-material/CommentRounded";
 import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [openMenu, setOpenMenu] = useState(false);
+  const navigate : any = useNavigate();
   const menuOptions = [
     {
       text: "Home",
@@ -43,13 +45,17 @@ const Navbar = () => {
       icon: <ShoppingCartRoundedIcon />,
     },
   ];
+
+  const handleClick = () => {
+    navigate("/app");
+  }
   return (
     <nav>
       <div className="nav-logo-container">
         <img src={Logo} alt="" className="logo-image"/>
       </div>
       <div className="navbar-links-container">
-        <button className="primary-button">Getting Started</button>
+        <button className="primary-button" onClick={handleClick}>Getting Started</button>
       </div>
       <div className="navbar-menu-container">
         <HiOutlineBars3 onClick={() => setOpenMenu(true)} />
