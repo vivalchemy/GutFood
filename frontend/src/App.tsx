@@ -1,13 +1,14 @@
 import HomePage from "./components/HomePage"
 import { ThemeProvider } from "@/components/theme-provider"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import LandingPage from "./components/LandingPage"
 
 function App() {
 
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <HomePage />,
+      element: <LandingPage />,
     },
     {
       path: "/app",
