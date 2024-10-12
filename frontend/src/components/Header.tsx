@@ -2,6 +2,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronLeft, MessageSquare } from 'lucide-react'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { useNavigate } from "react-router-dom"
 
 interface HeaderProps {
   setIsChatOpen: (open: boolean) => void
@@ -10,10 +11,14 @@ interface HeaderProps {
   analysisMode: "Image Analysis" | "Manual"
 }
 
+
 export function Header({ setIsChatOpen, isChatOpen, handleDropdownChange, analysisMode }: HeaderProps) {
+  const navigate = useNavigate()
   return (
     <div className="flex justify-between items-center mb-4">
-      <ChevronLeft />
+      <Button onClick={() => navigate("/")}>
+        <ChevronLeft />
+      </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
