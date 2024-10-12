@@ -48,20 +48,6 @@ export function MainContent({
     setIsLoading(true);
     setShowAnalysis(false);
 
-    const response = await fetch("http://127.0.0.1:8000/test", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if(response){
-      console.log(response);
-    }
-
-    const data = await response.json();
-    console.log(data);
-
     // Simulate analysis time (2 seconds)
     setTimeout(() => {
       setIsLoading(false);
