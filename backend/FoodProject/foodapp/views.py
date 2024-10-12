@@ -1,22 +1,26 @@
 # Import the Python SDK
-import google.generativeai as genai
-import numpy as np
-# from PIL import Image
-# Used to securely store your API key
-genai.configure(api_key="AIzaSyCxm7u1hly5Vo0ZOMHOJgWo9__JQlfUusk")
-
+# Import the Python SDK
 import json
 
+import google.generativeai as genai
+import joblib
+import numpy as np
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-
 
 # Create your views here.
 # views.py
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
+from .forms import MessageForm
+from .models1 import Message
 from .utils import ask_question, init_convo, predict_health_impacts
+
+# from PIL import Image
+# Used to securely store your API key
+genai.configure(api_key="AIzaSyCxm7u1hly5Vo0ZOMHOJgWo9__JQlfUusk")
 
 
 @csrf_exempt
@@ -47,21 +51,23 @@ def predict_view(request):
         # Generate content using the model
         response = model.generate_content(
             "Please provide a JSON object with the following nutrient values for a random food item: "
-            "{\"Protein\": 25.0, \"TotalFat\": 15.0, \"Carbohydrate\": 60.0, "
-            "\"Sodium\": 300.0, \"SaturatedFat\": 5.0, \"Cholesterol\": 100.0, "
-            "\"Sugar\": 10.0, \"Calcium\": 200.0, \"Iron\": 2.5, \"Potassium\": 400.0, "
-            "\"VitaminC\": 10.0, \"VitaminE\": 1.5, \"VitaminD\": 0.5}. "
+            '{"Protein": 25.0, "TotalFat": 15.0, "Carbohydrate": 60.0, '
+            '"Sodium": 300.0, "SaturatedFat": 5.0, "Cholesterol": 100.0, '
+            '"Sugar": 10.0, "Calcium": 200.0, "Iron": 2.5, "Potassium": 400.0, '
+            '"VitaminC": 10.0, "VitaminE": 1.5, "VitaminD": 0.5}. '
             "Ensure the output is a valid JSON object without any additional text."
         )
         # Print the raw response to debug
         print("Raw Response:", response.text)
 
         # Check if the response is empty or not
-        if not response.text.strip():  # Checks if the response is empty or contains only whitespace
+        if (
+            not response.text.strip()
+        ):  # Checks if the response is empty or contains only whitespace
             print("Received an empty response. Cannot parse JSON.")
         else:
             try:
-            # Parse the JSON response
+                # Parse the JSON response
                 response1 = json.loads(response.text)
                 print("Parsed JSON:", response1)
 
@@ -78,41 +84,44 @@ def predict_view(request):
 
                 # Process the prediction (e.g., get the first predicted value)
                 result = prediction1[0]  # Get the predicted value
-                context = {'result': result}
+                context = {"result": result}
                 print("Prediction Result:", context)
 
             except json.JSONDecodeError as e:
-                        print("Error decoding JSON:", e)  # Output any JSON decode errors
+                print("Error decoding JSON:", e)  # Output any JSON decode errors
             except Exception as e:
-                        print("An error occurred:", e)  # Catch any other exceptions
+                print("An error occurred:", e)  # Catch any other exceptions
         print("Prediction Result:", context)
 
         predictions = predict_health_impacts(input_data)
 
-        return JsonResponse({
-            'diabetes_impact': predictions[0].tolist(),
-            'heart_disease_impact': predictions[1].tolist(),
-            'hypertension_impact': predictions[2].tolist(),
-            'calary':context['result']
-        })
-    
-    return render(request, 'input_form.html')
-        return JsonResponse({
-            'diabetes_impact': predictions[0].tolist(),
-            'heart_disease_impact': predictions[1].tolist(),
-            'hypertension_impact': predictions[2].tolist(),
-        })
-    
-    return render(request, 'input_form.html')
         return JsonResponse(
             {
                 "diabetes_impact": predictions[0].tolist(),
                 "heart_disease_impact": predictions[1].tolist(),
                 "hypertension_impact": predictions[2].tolist(),
+                "calary": context["result"],
             }
         )
 
     return render(request, "input_form.html")
+    #
+    #     return JsonResponse({
+    #         'diabetes_impact': predictions[0].tolist(),
+    #         'heart_disease_impact': predictions[1].tolist(),
+    #         'hypertension_impact': predictions[2].tolist(),
+    #     })
+    #
+    # return render(request, 'input_form.html')
+    #     return JsonResponse(
+    #         {
+    #             "diabetes_impact": predictions[0].tolist(),
+    #             "heart_disease_impact": predictions[1].tolist(),
+    #             "hypertension_impact": predictions[2].tolist(),
+    #         }
+    #     )
+    #
+    # return render(request, "input_form.html")
 
 
 # gemini = Gemini(api_key='AIzaSyCxm7u1hly5Vo0ZOMHOJgWo9__JQlfUusk')
@@ -176,36 +185,6 @@ def classify_food_view(request):
             "VitaminD": 0.5,
         }
         # Prepare the input for prediction
-        input_data = [[
-            25.0,
-            15.0,
-            60.0,
-            300.0,
-            5.0,
-            100.0,
-            10.0,
-            200.0,
-            2.5,
-            400.0,
-            10.0,
-            1.5,
-            0.5
-        ]]
-        input_data = [[
-             25.0,
-            15.0,
-            60.0,
-            300.0,
-            5.0,
-            100.0,
-            10.0,
-            200.0,
-            2.5,
-            400.0,
-            10.0,
-            1.5,
-            0.5
-        ]]
         input_data = [
             [
                 25.0,
@@ -223,7 +202,6 @@ def classify_food_view(request):
                 0.5,
             ]
         ]
-
         # Make prediction
         prediction = modelRF.predict(input_data)
 
