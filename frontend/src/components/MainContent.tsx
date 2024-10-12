@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
-import { ImagePreview } from './ImagePreview'
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import ReactMarkdown from "react-markdown"; // Assuming you want to use markdown parsing
+import { useState } from "react";
+import { ImagePreview } from './ImagePreview';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import ReactMarkdown from "react-markdown";
 import { LoadingSpinner } from "./ui/loading-spinner";
 
 interface MainContentProps {
-  analysisMode: "Image Analysis" | "Manual"
-  selectedImage: string | null
-  handleRemoveImage: () => void
-  handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
-  openCamera: () => void
-  cameraPermission: PermissionState | null
-  markdownAnalysis: string
+  analysisMode: "Image Analysis" | "Manual";
+  selectedImage: string | null;
+  handleRemoveImage: () => void;
+  handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  openCamera: () => void;
+  cameraPermission: PermissionState | null;
+  markdownAnalysis: string;
+  handleSubmitForm: (formData: any) => void; // Function to submit the form data
 }
 
 export function MainContent({
@@ -24,40 +27,64 @@ export function MainContent({
   openCamera,
   cameraPermission,
   markdownAnalysis,
+  handleSubmitForm,
 }: MainContentProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
 
-  // New state for storing and retrieving health records from localStorage
-  const [healthRecords, setHealthRecords] = useState("");
-
-  // Load data from local storage when the component mounts
-  useEffect(() => {
-    const savedHealthRecords = localStorage.getItem("healthRecords");
-    if (savedHealthRecords) {
-      setHealthRecords(savedHealthRecords);
-    }
-  }, []);
-
-  // Update local storage when healthRecords state changes
-  useEffect(() => {
-    localStorage.setItem("healthRecords", healthRecords);
-  }, [healthRecords]);
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [quantityConsumed, setQuantityConsumed] = useState("");
+  const [frequency, setFrequency] = useState("");
+  const [cookingMethod, setCookingMethod] = useState("");
+  const [additionalParams, setAdditionalParams] = useState("");
 
   const handleRunAnalysis = async () => {
     setIsLoading(true);
     setShowAnalysis(false);
 
-    // Simulate analysis time (2 seconds)
-    setTimeout(() => {
+    const formData = {
+      age,
+      gender,
+      quantityConsumed,
+      frequency,
+      cookingMethod,
+      additionalParams,
+    };
+
+    console.log(formData);
+    
+
+    try {
+      // Replace with your backend API endpoint
+      const response = await fetch('https://127.0.0.1/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to send data to the backend');
+      }
+  
+      const data = await response.json();
+      console.log('Backend response:', data);  
+
+      // Simulate analysis time (2 seconds)
+      setTimeout(() => {
+        setIsLoading(false);
+        setShowAnalysis(true);
+      }, 2000);
+    } catch (error) {
+      console.error('Error:', error);
       setIsLoading(false);
-      setShowAnalysis(true);
-    }, 2000);
+    }
   };
 
   return (
     <div>
-      {/* Render the image preview or ingredient list based on the analysis mode */}
       {analysisMode === "Image Analysis" ? (
         <Card className="mb-4">
           <CardHeader>
@@ -87,21 +114,103 @@ export function MainContent({
         </Card>
       )}
 
-      {/* Render the health records textarea */}
+      {/* Nutritional Information Form */}
       <h3 className="font-semibold leading-none tracking-tight mb-4">
-        Previous Medical History
+        Nutritional Information Form
       </h3>
-      <Textarea
-        placeholder="Add Health details here..."
-        value={healthRecords}
-        onChange={(e) => setHealthRecords(e.target.value)}
-        className="mb-4 min-h-40"
-      />
+
+      {/* Flex container for age and gender */}
+      <div className="flex gap-4 mb-4">
+        {/* Age Input */}
+        <div className="flex-1">
+          <label className="block font-semibold mb-2">Age</label>
+          <Input
+            type="number"
+            placeholder="Enter age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
+
+        {/* Gender Select */}
+        <div className="flex-1">
+          <label className="block font-semibold mb-2">Gender</label>
+          <Select onValueChange={setGender} defaultValue="">
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Male">Male</SelectItem>
+              <SelectItem value="Female">Female</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Flex container for quantity and frequency */}
+      <div className="flex gap-4 mb-4">
+        {/* Quantity Consumed Input */}
+        <div className="flex-1">
+          <label className="block font-semibold mb-2">Quantity Consumed (grams)</label>
+          <Input
+            type="number"
+            placeholder="Enter quantity"
+            value={quantityConsumed}
+            onChange={(e) => setQuantityConsumed(e.target.value)}
+          />
+        </div>
+
+        {/* Frequency of Consumption Select */}
+        <div className="flex-1">
+          <label className="block font-semibold mb-2">Frequency of Consumption</label>
+          <Select onValueChange={setFrequency} defaultValue="">
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Frequency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Daily">Daily</SelectItem>
+              <SelectItem value="Weekly">Weekly</SelectItem>
+              <SelectItem value="Monthly">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Cooking Method Select */}
+      <div className="mb-4">
+        <label className="block font-semibold mb-2">Cooking Method</label>
+        <Select onValueChange={setCookingMethod} defaultValue="">
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Cooking Method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Raw">Raw</SelectItem>
+            <SelectItem value="Frying">Frying</SelectItem>
+            <SelectItem value="Boiling">Boiling</SelectItem>
+            <SelectItem value="Grilling">Grilling</SelectItem>
+            <SelectItem value="Baking">Baking</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Additional Parameters Textarea */}
+      <div className="mb-4">
+        <label className="block font-semibold mb-2">Additional Parameters</label>
+        <Textarea
+          placeholder="Add any additional information... Eg: Medical history, allergies, or dietary restrictions."
+          value={additionalParams}
+          onChange={(e) => setAdditionalParams(e.target.value)}
+          className="mb-4 min-h-40"
+        />
+
+      </div>
+
+      {/* Run Analysis Button */}
       <Button className="w-full text-lg" onClick={handleRunAnalysis}>
         Run Analysis
       </Button>
 
-      {/* Render the loading spinner while the analysis is running */}
       {isLoading && (
         <div className="flex justify-center w-full mt-4">
           <LoadingSpinner size={48} />
@@ -121,4 +230,3 @@ export function MainContent({
     </div>
   );
 }
-
