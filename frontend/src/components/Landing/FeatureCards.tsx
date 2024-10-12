@@ -2,6 +2,8 @@ import './App.css'; // Correct path to import App.css
 import FQ from "../../Assets/Food-Quality.jpg"; // Food Quality image
 import ID from "../../Assets/Ingredient-Detection.png";
 import DP from "../../Assets/Disease-Prediction.png"; // Disease Prediction image
+import { useNavigate } from 'react-router-dom';
+
 
 const FeatureCards = () => {
   const features = [
@@ -21,6 +23,7 @@ const FeatureCards = () => {
       image: DP, // Disease Prediction image
     },
   ];
+  const navigator = useNavigate();
 
   return (
     <div className="work-section-wrapper">
@@ -37,7 +40,7 @@ const FeatureCards = () => {
                 />
                 <h3 className="feature-card-title">{feature.title}</h3>
                 <p className="feature-card-description">{feature.description}</p>
-                <button className="feature-card-button">Get Started</button>
+                <button className="feature-card-button" onClick={() => navigator("/app")}>Get Started</button>
               </div>
             ))}
           </div>

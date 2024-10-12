@@ -4,8 +4,10 @@ import React from "react";
 import AboutBackground from "../../Assets/about-background.png";
 import AboutBackgroundImage from "../../Assets/about-background-image.png";
 import { BsFillPlayCircleFill } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 
 const About = () => {
+  const navigator = useNavigate()
   return (
     <div className="about-section-container">
       <div className="about-background-image-container">
@@ -20,14 +22,14 @@ const About = () => {
           Good Nutrition Begins with Safe, Fresh Food
         </h1>
         <p className="primary-text">
-        At GutFood, we aim to help individuals eat safely by using AI/ML technology to quickly assess the freshness and quality of food. Our platform identifies potential risks in meals, ensuring that you make informed decisions about what you consume.
+          At GutFood, we aim to help individuals eat safely by using AI/ML technology to quickly assess the freshness and quality of food. Our platform identifies potential risks in meals, ensuring that you make informed decisions about what you consume.
         </p>
         <p className="primary-text">
-        Founded by a team passionate about AI and food safety, FreshScan is dedicated to improving food standards and promoting better health outcomes worldwide.
+          Founded by a team passionate about AI and food safety, FreshScan is dedicated to improving food standards and promoting better health outcomes worldwide.
         </p>
         <div className="about-buttons-container">
-          <button className="secondary-button">Learn More</button>
-          
+          <button className="secondary-button" onClick={() => navigator("/app")}>Learn More</button>
+
         </div>
       </div>
     </div>
