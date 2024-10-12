@@ -40,14 +40,40 @@ export default function HomePage() {
     }
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => setSelectedImage(e.target?.result as string)
-      reader.readAsDataURL(file)
+      // Create a FileReader to read the file for preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        // Set the image preview to the FileReader result
+        setSelectedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file); // Read file as data URL for preview      
+  
+      // Now upload the file to the backend
+      const formData = new FormData();
+      formData.append('file', file); // Use the appropriate key expected by your backend      
+  
+      try {
+        const response = await fetch('http://127.0.0.1:8000/quality/', { // Update with your backend route
+          method: 'POST',
+          body: formData,
+        });
+  
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Upload successful:', result.file_text);
+          setMarkdownAnalysis(result.file_text);
+        } else {
+          console.error('Upload failed:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error while uploading image:', error);
     }
-  }
+  };
+}
+  
 
   const handleRemoveImage = () => {
     setSelectedImage(null)
@@ -181,4 +207,3 @@ export default function HomePage() {
     </div>
   )
 }
-
