@@ -9,15 +9,15 @@ import Footer from "./Landing/Footer";
 
 function LandingPage() {
   return (
-    <div>
-    <Home />
-    <About />
-    <Cards />
-    <Work />
-    <Testimonial />
-    <Contact />
-    <Footer />
-     </div>
+    <div className="mx-24">
+      <Home />
+      <About />
+      <Cards />
+      <Work />
+      <Testimonial />
+      <Contact />
+      <Footer />
+    </div>
   )
 }
 
