@@ -23,6 +23,10 @@ from .utils import ask_question, init_convo, predict_health_impacts
 genai.configure(api_key="AIzaSyCxm7u1hly5Vo0ZOMHOJgWo9__JQlfUusk")
 
 
+modelQl = joblib.load(
+    "foodapp/models/quality_prediction.joblib"
+) 
+
 @csrf_exempt
 def predict_view(request):
     # Assuming you're sending data via POST request
@@ -44,10 +48,9 @@ def predict_view(request):
                 "Cooking Method": form_data["cookingMethod"],
             }
         ]
-
+        # calory
         # Initialize the Generative Model
         model = genai.GenerativeModel("gemini-1.5-flash")
-
         # Generate content using the model
         response = model.generate_content(
             "Please provide a JSON object with the following nutrient values for a random food item: "
@@ -59,7 +62,6 @@ def predict_view(request):
         )
         # Print the raw response to debug
         print("Raw Response:", response.text)
-
         # Check if the response is empty or not
         if (
             not response.text.strip()
@@ -93,6 +95,53 @@ def predict_view(request):
                 print("An error occurred:", e)  # Catch any other exceptions
         print("Prediction Result:", context)
 
+        # quality
+        responseq = model.generate_content(
+            "Please provide a JSON object with the following nutrient values for a random food item: "
+            '{"fixed_acidity": 7.65, "volatile_acidity": 0.44, "citric_acid": 0.42, "residual_sugar": 1.22, '
+            '"chlorides": 0.05, "free_sulfur_dioxide": 24, "total_sulfur_dioxide": 56, "density": 0.99532, '
+            '"pH": 3.19, "sulphates": 0.82, "alcohol": 12.4} '
+            "Ensure the output is a valid JSON object without any additional text."
+        )
+
+        # Print the raw response to debug
+        print("Raw Response:", responseq.text)
+        # Check if the response is empty or not
+        if (
+            not responseq.text.strip()
+        ):  # Checks if the response is empty or contains only whitespace
+            print("Received an empty response. Cannot parse JSON.")
+        else:
+            try:
+                # Parse the JSON response
+                response1q = json.loads(responseq.text)
+                print("Parsed JSON:", response1q)
+
+                # Extract values into a list
+                input_data1q = list(response1q.values())
+                print("Input Data:", input_data1q)
+
+                # Reshape the input data to 2D array (1 sample, n features)
+                input_data1_reshapedq = np.array(input_data1q).reshape(1, -1)
+                print("Reshaped Input Data:", input_data1_reshapedq)
+
+                # Make a prediction using the modelRF
+                prediction1q = modelQl.predict(input_data1_reshapedq)
+
+                # Process the prediction (e.g., get the first predicted value)
+                resultq = prediction1q[0].item()  # Get the predicted value
+                contextq = {"result": resultq}
+                
+
+            except json.JSONDecodeError as e:
+                print("Error decoding JSON:", e)  # Output any JSON decode errors
+            except Exception as e:
+                print("An error occurred:", e)  # Catch any other exceptions
+
+
+        print("Prediction Result:", context)
+        print("Prediction Result:", contextq)
+
         predictions = predict_health_impacts(input_data)
 
         return JsonResponse(
@@ -101,6 +150,7 @@ def predict_view(request):
                 "heart_disease_impact": predictions[1].tolist(),
                 "hypertension_impact": predictions[2].tolist(),
                 "calary": context["result"],
+                "quality": contextq["result"]
             }
         )
 
@@ -194,7 +244,7 @@ def classify_food_view(request):
                 5.0,
                 100.0,
                 10.0,
-                200.0,
+                500.0,
                 2.5,
                 400.0,
                 10.0,
