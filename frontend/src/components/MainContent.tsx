@@ -54,7 +54,6 @@ export function MainContent({
 
     console.log(formData);
     
-
     try {
       // Replace with your backend API endpoint
       const response = await fetch('https://127.0.0.1/predict', {
