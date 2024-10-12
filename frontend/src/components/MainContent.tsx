@@ -83,7 +83,7 @@ export function MainContent({
       setDiabetes(data.diabetes_impact);
       setHeartDisease(data.heart_disease_impact);
       setHypertension(data.hypertension_impact);
-      setQualityOfFood(data.qualityOfFood);
+      setQualityOfFood(data.quality);
       setCalories(data.calary);
 
       setTimeout(() => {
