@@ -1,2 +1,5 @@
 myenv
 __pycache__
+*.jpeg
+*.jpg
+*.png
