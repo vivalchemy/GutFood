@@ -17,22 +17,25 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import json
 
+@csrf_exempt
 def predict_view(request):
     # Assuming you're sending data via POST request
     if request.method == 'POST':
-        data = request.POST.get('formData')# Get data from request
-        print(data)
+        form_data = json.loads(request.body.decode('utf-8'))
+
+        # Print the received formData to the console
+        print('Received formData:', form_data['age'])
         # Ensure the data is in the expected format
         input_data = [
         {
-            'Age': 24,
-            'Gender': 'Male',
-            'Ingredient Name': 'sugary Drink',
+            'Age': form_data['age'],
+            'Gender': form_data['gender'],
+            'Ingredient Name': 'Sugar',
             'Category': 'sugar',
-            'Quantity Consumed': 128,
-            'Frequency of Consumption': 'Weekly',
+            'Quantity Consumed': form_data['quantityConsumed'],
+            'Frequency of Consumption': form_data['frequency'],
             'Processed Food': 0,
-            'Cooking Method': 'Raw'
+            'Cooking Method': form_data['cookingMethod']
         }
         ]
         predictions = predict_health_impacts(input_data)
@@ -132,7 +135,7 @@ def classify_food_view(request):
 def test(request):
     if request.method == 'GET':
         return JsonResponse({'message': "Hello"})
-    
+
 @csrf_exempt  # Disable CSRF protection for this view (only for testing, use proper CSRF tokens in production)
 def quality_view(request):
     if request.method == 'POST':
@@ -153,7 +156,8 @@ def quality_view(request):
         )
         print(f"{result.text=}")
         
-
+        
+        start_chat(result_text)
         # You can perform further processing on the file here (e.g., quality analysis)
         # For now, we're just returning a success message
 
@@ -161,6 +165,41 @@ def quality_view(request):
     
     # Return a method not allowed response for non-POST requests
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+        # Generation configuration for the model
+generation_config = {
+            "temperature": 0.7,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 2048,
+}
+
+        # Safety settings for content generation
+safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+]
+
+model = genai.GenerativeModel(
+            "gemini-1.5-flash",
+            generation_config=generation_config,
+            safety_settings=safety_settings,
+)
+convo = model.start_chat()
+
+def start_chat(food_details):
+
+        system_prompt = """
+        You are a professional and certified nutritionist. You will be provided with information about a food item or data related to food. A user will then ask you questions about it. 
+
+        Respond to the user in the style of a knowledgeable doctor, providing accurate and relevant health and nutritional information only. Avoid using informal language and focus on providing evidence-based advice. 
+        Item:
+        """
+        # Send the system prompt to the conversation
+        convo.send_message(system_prompt.strip() + food_details)
+
 
 @csrf_exempt
 def chat_view(request):
@@ -176,8 +215,8 @@ def chat_view(request):
             print(f"User message: {user_message}")  # Log the user message
 
             # Generate response using the Gemini model
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            result = model.generate_content(user_message)  # Pass the user message to the model
+            
+            result = convo.send_message(user_message)  # Pass the user message to the model
             
             # Log the generated response
             print(f"Generated response: {result.text}")
@@ -194,3 +233,6 @@ def chat_view(request):
         return JsonResponse({'data': data})
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+
