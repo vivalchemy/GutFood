@@ -20,7 +20,8 @@ import json
 def predict_view(request):
     # Assuming you're sending data via POST request
     if request.method == 'POST':
-        data = request.POST.dict()  # Get data from request
+        data = request.POST.get('formData')# Get data from request
+        print(data)
         # Ensure the data is in the expected format
         input_data = [
         {
