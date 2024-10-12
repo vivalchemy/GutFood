@@ -50,17 +50,17 @@ export default function HomePage() {
         setSelectedImage(e.target?.result as string);
       };
       reader.readAsDataURL(file); // Read file as data URL for preview      
-  
+
       // Now upload the file to the backend
       const formData = new FormData();
       formData.append('file', file); // Use the appropriate key expected by your backend      
-  
+
       try {
-        const response = await fetch('http://127.0.0.1:8000/quality/', { // Update with your backend route
+        const response = await fetch('http://192.168.29.35:8000/quality/', { // Update with your backend route
           method: 'POST',
           body: formData,
         });
-  
+
         if (response.ok) {
           const result = await response.json();
           console.log('Upload successful:', result.file_text);
@@ -70,10 +70,10 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('Error while uploading image:', error);
-    }
-  };
-}
-  
+      }
+    };
+  }
+
 
   const handleRemoveImage = () => {
     setSelectedImage(null)
@@ -116,14 +116,14 @@ export default function HomePage() {
     for (let i = 0; i < binaryData.length; i++) {
       uint8Array[i] = binaryData.charCodeAt(i);
     }
-  
+
     // Create a Blob from the array buffer
     const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
-  
+
     // Create a File object from the Blob
     return new File([blob], filename, { type: 'image/jpeg' });
   };
-  
+
   const captureImage = useCallback(async () => {
     if (videoRef.current && canvasRef.current) {
       const context = canvasRef.current.getContext('2d');
@@ -134,26 +134,26 @@ export default function HomePage() {
         const imageDataUrl = canvasRef.current.toDataURL('image/jpeg');
         setSelectedImage(imageDataUrl);
         setIsCameraOpen(false);
-  
+
         // Stop the video stream after capturing the image
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach((track) => track.stop());
-  
+
         // Generate the image file
         const imageFile = await generateAndUploadImageFile(imageDataUrl);
         console.log(imageFile);
-  
+
         // Prepare the form data
         const formData = new FormData();
         formData.append('file', imageFile); // 'file' is the key for the uploaded file in FormData
-  
+
         // Send the image to the backend
         try {
-          const response = await fetch('http://127.0.0.1:8000/quality/', {
+          const response = await fetch('http://192.168.29.35:8000/quality/', {
             method: 'POST',
             body: formData, // Send the form data containing the file
           });
-  
+
           if (response.ok) {
             const result = await response.json();
             console.log('Upload successful:', result.file_text);
@@ -167,7 +167,7 @@ export default function HomePage() {
       }
     }
   }, []);
-  
+
   return (
     <div className="flex h-screen bg-background text-foreground relative">
       <div className="flex-1 flex flex-col p-4 overflow-y-auto">

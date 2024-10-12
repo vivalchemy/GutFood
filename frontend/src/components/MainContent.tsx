@@ -61,23 +61,23 @@ export function MainContent({
     };
 
     console.log(formData);
-    
+
     try {
       // Replace with your backend API endpoint
-      const response = await fetch('http://127.0.0.1:8000/predict/', {
+      const response = await fetch('http://192.168.29.35:8000/predict/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to send data to the backend');
       }
-  
+
       const data = await response.json();
-      console.log('Backend response:', data);  
+      console.log('Backend response:', data);
 
       // Extract data from the backend response for chart
       setDiabetes(data.diabetes_impact);
@@ -241,7 +241,7 @@ export function MainContent({
           </div>
 
           {/* Display the AnalysisChart */}
-          <Chart 
+          <Chart
             diabetes={diabetes}
             heartDisease={heartDisease}
             hypertension={hypertension}
