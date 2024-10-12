@@ -1,7 +1,7 @@
 # Import the Python SDK
 # Import the Python SDK
 import json
-
+import pandas as pd
 import google.generativeai as genai
 import joblib
 import numpy as np
@@ -229,29 +229,33 @@ def classify_food_view(request):
             "Sugar": 10.0,
             "Calcium": 200.0,
             "Iron": 2.5,
-            "Potassium": 400.0,
+            "Potassium": 900.0,
             "VitaminC": 10.0,
             "VitaminE": 1.5,
             "VitaminD": 0.5,
         }
-        # Prepare the input for prediction
-        input_data = [
-            [
-                25.0,
-                15.0,
-                60.0,
-                300.0,
-                5.0,
-                100.0,
-                10.0,
-                500.0,
-                2.5,
-                400.0,
-                10.0,
-                1.5,
-                0.5,
-            ]
+        feature_names = [
+            'Protein', 'TotalFat', 'Carbohydrate', 'Sodium', 'SaturatedFat', 
+            'Cholesterol', 'Sugar', 'Calcium', 'Iron', 'Potassium', 
+            'VitaminC', 'VitaminE', 'VitaminD'
         ]
+
+        # Create a DataFrame with the same feature names for predictions
+        input_data = pd.DataFrame({
+            'Protein': [25.0],
+            'TotalFat': [15.0],
+            'Carbohydrate': [40.0],
+            'Sodium': [300.0],
+            'SaturatedFat': [5.0],
+            'Cholesterol': [900.0],
+            'Sugar': [10.0],
+            'Calcium': [200.0],
+            'Iron': [2.5],
+            'Potassium': [900.0],
+            'VitaminC': [10.0],
+            'VitaminE': [1.5],
+            'VitaminD': [0.5]
+        }, columns=feature_names)
         # Make prediction
         prediction = modelRF.predict(input_data)
 
@@ -287,7 +291,7 @@ def quality_view(request):
             [
                 myfile,
                 "\n\n",
-                "Can you tell me about the ingredients in this photo and is this food is harmfull and all it contains chemicals estimate?",
+                "Given an image of food, please provide a detailed analysis considering the following:1. **Ingredients:** List all visible ingredients as specifically as possible. For example, instead of bread,identify the type of bread like whole wheat sourdough or white hamburger bun. 2. **Nutritional Value:** Based on the visible ingredients, discuss the potential nutritional value of the food. Mention potential vitamins, minerals, protein, fiber, etc. 3. **Potential Health Concerns:**  * **Unhealthy Ingredients:** Identify any ingredients that might be considered unhealthy and explain why. Consider aspects like high saturated fat, added sugar, processed ingredients, sodium content, etc. * **Chemicals of Concern:** While all food contains chemicals, are there any ingredients that might raise concern due to potential additives or processing methods? Explain your reasoning.4. **Label Insights:** Are there any labels or branding visible in the image? If so, what information do they provide about the food's ingredients, nutritional content, or origin?5. **Healthier Alternatives:** Suggest specific, healthier alternatives to ingredients or preparation methods used in the dish. For example, could a different type of oil be used, or could a certain ingredient be substituted for a less processed option? **Please provide your analysis based solely on the visual information present in the image.  Do not speculate about ingredients or preparations not visible in the image.** ",
             ]
         )
         print(f"the result is {result.text=}")
