@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Impact Prediction</title>
+    <!-- Add your CSS here -->
+</head>
+<body>
+    <h1>Food Impact Prediction</h1>
+     <form method="POST" action="{% url 'predict' %}">
+        {% csrf_token %} 
+        
+        <!-- <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select><br><br>
+
+       
+
+        <label for="ingredient_name">Ingredient Name:</label>
+        <input type="text" id="ingredient_name" name="ingredient_name" required><br><br>
+
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" required><br><br>
+
+        <label for="frequency_of_consumption">Frequency of Consumption:</label>
+        <input type="text" id="frequency_of_consumption" name="frequency_of_consumption" required><br><br>
+
+        <label for="processed_food">Processed Food:</label>
+        <input type="text" id="processed_food" name="processed_food" required><br><br>
+
+        <label for="cooking_method">Cooking Method:</label>
+        <input type="text" id="cooking_method" name="cooking_method" required><br><br>
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required min="1"><br><br>
+
+        <label for="quantity_consumed">Quantity Consumed:</label>
+        <input type="number" id="quantity_consumed" name="quantity_consumed" required min="1"><br><br>
+         -->
+
+        <button type="submit">Predict</button> 
+    </form> 
+
+    {% if prediction %}
+        <h2>Prediction Result</h2>
+        <p>{{ prediction }}</p>
+    {% endif %}
+</body>
+</html>

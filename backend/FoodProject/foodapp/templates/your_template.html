@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form method="POST">
+        {% csrf_token %}
+        <!-- <label for="protein">Protein:</label>
+        <input type="text" name="protein" required>
+    
+        <label for="total_fat">Total Fat:</label>
+        <input type="text" name="total_fat" required>
+    
+        <label for="carbohydrate">Carbohydrate:</label>
+        <input type="text" name="carbohydrate" required>
+    
+        <label for="sodium">Sodium:</label>
+        <input type="text" name="sodium" required>
+    
+        <label for="saturated_fat">Saturated Fat:</label>
+        <input type="text" name="saturated_fat" required>
+    
+        <label for="cholesterol">Cholesterol:</label>
+        <input type="text" name="cholesterol" required>
+    
+        <label for="sugar">Sugar:</label>
+        <input type="text" name="sugar" required>
+    
+        <label for="calcium">Calcium:</label>
+        <input type="text" name="calcium" required>
+    
+        <label for="iron">Iron:</label>
+        <input type="text" name="iron" required>
+    
+        <label for="potassium">Potassium:</label>
+        <input type="text" name="potassium" required>
+    
+        <label for="vitamin_c">Vitamin C:</label>
+        <input type="text" name="vitamin_c" required>
+    
+        <label for="vitamin_e">Vitamin E:</label>
+        <input type="text" name="vitamin_e" required>
+    
+        <label for="vitamin_d">Vitamin D:</label>
+        <input type="text" name="vitamin_d" required>
+     -->
+        <button type="submit">Classify Food</button>
+    </form>
+    
+    {% if result %}
+        <h3>Prediction Result: {{ result }}</h3>
+    {% endif %}
+    
+</body>
+</html>
