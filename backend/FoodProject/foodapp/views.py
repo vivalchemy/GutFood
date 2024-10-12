@@ -4,9 +4,11 @@ from .forms import MessageForm
 import joblib
 # Import the Python SDK
 import google.generativeai as genai
+import numpy as np
 # from PIL import Image
 # Used to securely store your API key
 genai.configure(api_key='AIzaSyCxm7u1hly5Vo0ZOMHOJgWo9__JQlfUusk')
+
 
 # Create your views here.
 # views.py
@@ -38,11 +40,60 @@ def predict_view(request):
             'Cooking Method': form_data['cookingMethod']
         }
         ]
+
+        # Initialize the Generative Model
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        # Generate content using the model
+        response = model.generate_content(
+            "Please provide a JSON object with the following nutrient values for a random food item: "
+            "{\"Protein\": 25.0, \"TotalFat\": 15.0, \"Carbohydrate\": 60.0, "
+            "\"Sodium\": 300.0, \"SaturatedFat\": 5.0, \"Cholesterol\": 100.0, "
+            "\"Sugar\": 10.0, \"Calcium\": 200.0, \"Iron\": 2.5, \"Potassium\": 400.0, "
+            "\"VitaminC\": 10.0, \"VitaminE\": 1.5, \"VitaminD\": 0.5}. "
+            "Ensure the output is a valid JSON object without any additional text."
+        )
+        # Print the raw response to debug
+        print("Raw Response:", response.text)
+
+        # Check if the response is empty or not
+        if not response.text.strip():  # Checks if the response is empty or contains only whitespace
+            print("Received an empty response. Cannot parse JSON.")
+        else:
+            try:
+            # Parse the JSON response
+                response1 = json.loads(response.text)
+                print("Parsed JSON:", response1)
+
+                # Extract values into a list
+                input_data1 = list(response1.values())
+                print("Input Data:", input_data1)
+
+                # Reshape the input data to 2D array (1 sample, n features)
+                input_data1_reshaped = np.array(input_data1).reshape(1, -1)
+                print("Reshaped Input Data:", input_data1_reshaped)
+
+                # Make a prediction using the modelRF
+                prediction1 = modelRF.predict(input_data1_reshaped)
+
+                # Process the prediction (e.g., get the first predicted value)
+                result = prediction1[0]  # Get the predicted value
+                context = {'result': result}
+                print("Prediction Result:", context)
+
+            except json.JSONDecodeError as e:
+                        print("Error decoding JSON:", e)  # Output any JSON decode errors
+            except Exception as e:
+                        print("An error occurred:", e)  # Catch any other exceptions
+        print("Prediction Result:", context)
+
         predictions = predict_health_impacts(input_data)
+
         return JsonResponse({
             'diabetes_impact': predictions[0].tolist(),
             'heart_disease_impact': predictions[1].tolist(),
             'hypertension_impact': predictions[2].tolist(),
+            'calary':context['result']
         })
     
     return render(request, 'input_form.html')
@@ -107,7 +158,7 @@ def classify_food_view(request):
         }
         # Prepare the input for prediction
         input_data = [[
-             25.0,
+            25.0,
             15.0,
             60.0,
             300.0,
