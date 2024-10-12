@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import ReactMarkdown from "react-markdown";
 import { LoadingSpinner } from "./ui/loading-spinner";
+import { Chart } from './Chart'; // Import the AnalysisChart component
 
 interface MainContentProps {
   analysisMode: "Image Analysis" | "Manual";
@@ -38,6 +39,13 @@ export function MainContent({
   const [frequency, setFrequency] = useState("");
   const [cookingMethod, setCookingMethod] = useState("");
   const [additionalParams, setAdditionalParams] = useState("");
+
+  // Health parameters
+  const [diabetes, setDiabetes] = useState(0);
+  const [heartDisease, setHeartDisease] = useState(0);
+  const [hypertension, setHypertension] = useState(0);
+  const [qualityOfFood, setQualityOfFood] = useState(0);
+  const [calories, setCalories] = useState(0);
 
   const handleRunAnalysis = async () => {
     setIsLoading(true);
@@ -71,7 +79,13 @@ export function MainContent({
       const data = await response.json();
       console.log('Backend response:', data);  
 
-      // Simulate analysis time (2 seconds)
+      // Extract data from the backend response for chart
+      setDiabetes(data.diabetes_impact);
+      setHeartDisease(data.heart_disease_impact);
+      setHypertension(data.hypertension_impact);
+      setQualityOfFood(data.qualityOfFood);
+      setCalories(data.calary);
+
       setTimeout(() => {
         setIsLoading(false);
         setShowAnalysis(true);
@@ -81,6 +95,7 @@ export function MainContent({
       setIsLoading(false);
     }
   };
+
 
   return (
     <div>
@@ -224,6 +239,15 @@ export function MainContent({
           <div className="p-4 bg-background border w-full rounded-lg">
             <ReactMarkdown>{markdownAnalysis}</ReactMarkdown>
           </div>
+
+          {/* Display the AnalysisChart */}
+          <Chart 
+            diabetes={diabetes}
+            heartDisease={heartDisease}
+            hypertension={hypertension}
+            qualityOfFood={qualityOfFood}
+            calories={calories}
+          />
         </div>
       )}
     </div>
