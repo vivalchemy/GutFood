@@ -97,7 +97,7 @@ export function Chat({
               }}
             >
 
-              <div className="flex flex-col items-start prose lg:prose-lg dark:prose-invert">
+              <div className="flex flex-col items-start">
                 <p>{chatMessage.sender}</p>
                 <ReactMarkdown>{chatMessage.message}</ReactMarkdown>
               </div>
