@@ -2,12 +2,20 @@ from django.shortcuts import render,redirect
 from .models1 import Message
 from .forms import MessageForm
 import joblib
-# from gemini import Gemini
+# Import the Python SDK
+import google.generativeai as genai
+# from PIL import Image
+# Used to securely store your API key
+genai.configure(api_key='AIzaSyCxm7u1hly5Vo0ZOMHOJgWo9__JQlfUusk')
 
 # Create your views here.
 # views.py
 from django.http import JsonResponse
 from .utils import predict_health_impacts
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import json
 
 def predict_view(request):
     # Assuming you're sending data via POST request
@@ -119,3 +127,69 @@ def classify_food_view(request):
         return render(request, 'your_template.html', context)
 
     return render(request, 'your_template.html')
+
+def test(request):
+    if request.method == 'GET':
+        return JsonResponse({'message': "Hello"})
+    
+@csrf_exempt  # Disable CSRF protection for this view (only for testing, use proper CSRF tokens in production)
+def quality_view(request):
+    if request.method == 'POST':
+        # Get the uploaded file from the request
+        file = request.FILES.get('file')
+
+        if not file:
+            return JsonResponse({'error': 'No file uploaded'}, status=400)
+
+        # Optional: Save the file using Django's default storage
+        file_name = default_storage.save(file.name, ContentFile(file.read()))
+
+        myfile = genai.upload_file(file_name)
+
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        result = model.generate_content(
+            [myfile, "\n\n", "Can you tell me about the ingredients in this photo and is this food is harmfull and all it contains chemicals estimate?"]
+        )
+        print(f"{result.text=}")
+        
+
+        # You can perform further processing on the file here (e.g., quality analysis)
+        # For now, we're just returning a success message
+
+        return JsonResponse({'message': 'File received successfully', 'file_text': result.text})
+    
+    # Return a method not allowed response for non-POST requests
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def chat_view(request):
+    if request.method == 'POST':
+        try:
+            # Parse JSON data
+            data = json.loads(request.body)
+            user_message = data.get('message', '')  # Extract the user message
+            
+            if not user_message:
+                return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+            
+            print(f"User message: {user_message}")  # Log the user message
+
+            # Generate response using the Gemini model
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            result = model.generate_content(user_message)  # Pass the user message to the model
+            
+            # Log the generated response
+            print(f"Generated response: {result.text}")
+
+            # Return the generated response to the frontend
+            return JsonResponse({'message': 'Message received', 'response': result.text})
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    elif request.method == 'GET':
+        # Handle GET requests if needed
+        data = request.GET.dict()
+        return JsonResponse({'data': data})
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=405)

@@ -13,6 +13,7 @@ interface MainContentProps {
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
   openCamera: () => void
   cameraPermission: PermissionState | null
+  markdownAnalysis: string
 }
 
 export function MainContent({
@@ -21,11 +22,11 @@ export function MainContent({
   handleRemoveImage,
   handleImageUpload,
   openCamera,
-  cameraPermission
+  cameraPermission,
+  markdownAnalysis,
 }: MainContentProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [markdownAnalysis, setMarkdownAnalysis] = useState("");
 
   // New state for storing and retrieving health records from localStorage
   const [healthRecords, setHealthRecords] = useState("");
@@ -43,21 +44,28 @@ export function MainContent({
     localStorage.setItem("healthRecords", healthRecords);
   }, [healthRecords]);
 
-  const handleRunAnalysis = () => {
+  const handleRunAnalysis = async () => {
     setIsLoading(true);
     setShowAnalysis(false);
+
+    const response = await fetch("http://127.0.0.1:8000/test", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if(response){
+      console.log(response);
+    }
+
+    const data = await response.json();
+    console.log(data);
 
     // Simulate analysis time (2 seconds)
     setTimeout(() => {
       setIsLoading(false);
       setShowAnalysis(true);
-
-      // Placeholder markdown analysis data
-      setMarkdownAnalysis(`
-- **Diagnosis**: Healthy
-- **Suggested Ingredients**: Apple, Carrot, Ginger
-- **Medical Advice**: No significant issues, continue with a balanced diet.
-`);
     }, 2000);
   };
 

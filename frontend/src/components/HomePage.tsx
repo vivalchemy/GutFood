@@ -6,8 +6,8 @@ import { CameraModal } from './CameraModal'
 
 export default function HomePage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [chatMessages, setChatMessages] = useState<string[]>([])
   const [inputMessage, setInputMessage] = useState('')
+  const [markdownAnalysis, setMarkdownAnalysis] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [cameraPermission, setCameraPermission] = useState<PermissionState | null>(null)
@@ -49,13 +49,6 @@ export default function HomePage() {
     }
   }
 
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      setChatMessages([...chatMessages, inputMessage])
-      setInputMessage('')
-    }
-  }
-
   const handleRemoveImage = () => {
     setSelectedImage(null)
   }
@@ -87,24 +80,68 @@ export default function HomePage() {
     }
   }
 
-  const captureImage = useCallback(() => {
+  const generateAndUploadImageFile = async (imageDataUrl: string) => {
+    imageDataUrl = imageDataUrl.split(',')[1] || imageDataUrl;
+    console.log(imageDataUrl);
+    let filename = 'image.jpeg';
+    const binaryData = atob(imageDataUrl);
+    const arrayBuffer = new ArrayBuffer(binaryData.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < binaryData.length; i++) {
+      uint8Array[i] = binaryData.charCodeAt(i);
+    }
+  
+    // Create a Blob from the array buffer
+    const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
+  
+    // Create a File object from the Blob
+    return new File([blob], filename, { type: 'image/jpeg' });
+  };
+  
+  const captureImage = useCallback(async () => {
     if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext('2d')
+      const context = canvasRef.current.getContext('2d');
       if (context) {
-        canvasRef.current.width = videoRef.current.videoWidth
-        canvasRef.current.height = videoRef.current.videoHeight
-        context.drawImage(videoRef.current, 0, 0)
-        const imageDataUrl = canvasRef.current.toDataURL('image/jpeg')
-        setSelectedImage(imageDataUrl)
-        setIsCameraOpen(false)
-
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0);
+        const imageDataUrl = canvasRef.current.toDataURL('image/jpeg');
+        setSelectedImage(imageDataUrl);
+        setIsCameraOpen(false);
+  
         // Stop the video stream after capturing the image
-        const stream = videoRef.current.srcObject as MediaStream
-        stream.getTracks().forEach(track => track.stop())
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+  
+        // Generate the image file
+        const imageFile = await generateAndUploadImageFile(imageDataUrl);
+        console.log(imageFile);
+  
+        // Prepare the form data
+        const formData = new FormData();
+        formData.append('file', imageFile); // 'file' is the key for the uploaded file in FormData
+  
+        // Send the image to the backend
+        try {
+          const response = await fetch('http://127.0.0.1:8000/quality/', {
+            method: 'POST',
+            body: formData, // Send the form data containing the file
+          });
+  
+          if (response.ok) {
+            const result = await response.json();
+            console.log('Upload successful:', result.file_text);
+            setMarkdownAnalysis(result.file_text);
+          } else {
+            console.error('Upload failed:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error while uploading image:', error);
+        }
       }
     }
-  }, [])
-
+  }, []);
+  
   return (
     <div className="flex h-screen bg-background text-foreground relative">
       <div className="flex-1 flex flex-col p-4 overflow-y-auto">
@@ -121,14 +158,13 @@ export default function HomePage() {
           handleImageUpload={handleImageUpload}
           openCamera={openCamera}
           cameraPermission={cameraPermission}
+          markdownAnalysis={markdownAnalysis}
         />
       </div>
 
       <Chat
-        chatMessages={chatMessages}
         inputMessage={inputMessage}
         setInputMessage={setInputMessage}
-        handleSendMessage={handleSendMessage}
         isChatOpen={isChatOpen}
         setIsChatOpen={setIsChatOpen}
       />
